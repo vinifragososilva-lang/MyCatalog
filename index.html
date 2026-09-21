@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Drop & Selects | Catálogo</title>
+  <title>Lagartin Shop | Catálogo</title>
+  <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
   <style>
     * {
       box-sizing: border-box;
@@ -13,157 +14,212 @@
     }
 
     body {
-      background-color: #0b0b0c;
-      color: #ffffff;
-      padding: 20px 15px;
+      background-color: #f4f4f6;
+      color: #0f0f10;
+      padding: 16px 12px;
     }
 
-    /* Cabeçalho Minimalista */
-    header {
-      text-align: center;
-      padding: 25px 10px 35px 10px;
-      max-width: 600px;
-      margin: 0 auto;
+    .top-bar {
+      display: flex;
+      gap: 8px;
+      max-width: 1100px;
+      margin: 0 auto 20px auto;
     }
 
-    header h1 {
-      font-size: 1.8rem;
-      font-weight: 800;
-      letter-spacing: -0.5px;
-      text-transform: uppercase;
-      margin-bottom: 8px;
+    .search-box {
+      flex: 1;
+      position: relative;
     }
 
-    header p {
+    .search-box input {
+      width: 100%;
+      height: 44px;
+      padding: 0 12px 0 40px;
+      border: 1px solid #e4e4e7;
+      border-radius: 10px;
+      background-color: #ffffff;
       font-size: 0.9rem;
-      color: #a1a1aa;
-      line-height: 1.4;
+      outline: none;
+      color: #18181b;
     }
 
-    /* Grade Estilo Marketplace */
+    .search-box ::placeholder {
+      color: #71717a;
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #71717a;
+      font-size: 1.1rem;
+    }
+
     .grid-produtos {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 16px;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
       max-width: 1100px;
       margin: 0 auto;
     }
 
-    /* Card do Produto inspirada na Droper */
+    @media (min-width: 768px) {
+      .grid-produtos {
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: 16px;
+      }
+    }
+
     .card {
-      background: #141416;
-      border: 1px solid #27272a;
-      border-radius: 12px;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      transition: border-color 0.2s ease, transform 0.2s ease;
-    }
-
-    .card:hover {
-      border-color: #52525b;
-      transform: translateY(-2px);
-    }
-
-    .card img {
-      width: 100%;
-      height: 280px;
-      object-fit: cover;
-      background-color: #1c1c1f;
-    }
-
-    .card-content {
+      background: #ffffff;
+      border-radius: 16px;
       padding: 16px;
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      justify-content: space-between;
+      text-decoration: none;
+      color: inherit;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
 
-    .card-category {
-      font-size: 0.75rem;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      color: #71717a;
-      font-weight: 600;
+    .card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 8px;
+      margin-bottom: 12px;
     }
 
     .card-title {
-      font-size: 1rem;
+      font-size: 0.9rem;
       font-weight: 600;
-      color: #f4f4f5;
-      line-height: 1.3;
+      color: #18181b;
+      line-height: 1.25;
+      flex: 1;
     }
 
     .card-price {
-      font-size: 1.15rem;
-      color: #22c55e; /* Verde estilo Droper */
-      font-weight: 700;
-    }
-
-    .btn-direct {
-      display: block;
-      text-align: center;
-      background-color: #ffffff;
+      font-size: 1.1rem;
+      font-weight: 800;
       color: #000000;
-      text-decoration: none;
-      padding: 12px;
-      border-radius: 8px;
-      font-weight: 700;
-      font-size: 0.85rem;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      transition: opacity 0.2s;
+      white-space: nowrap;
     }
 
-    .btn-direct:hover {
-      opacity: 0.9;
+    .card-price span {
+      font-size: 0.75rem;
+      font-weight: 600;
+      margin-right: 2px;
+    }
+
+    .card-img-wrapper {
+      width: 100%;
+      height: 160px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: auto;
+    }
+
+    .card-img-wrapper img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+
+    .btn-buy {
+      margin-top: 12px;
+      width: 100%;
+      padding: 8px 0;
+      background-color: #000000;
+      color: #ffffff;
+      text-align: center;
+      border-radius: 8px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .loading {
+      text-align: center;
+      grid-column: 1 / -1;
+      padding: 40px;
+      color: #71717a;
     }
   </style>
 </head>
 <body>
 
-  <header>
-    <h1>Personal Selects</h1>
-    <p>Desapegos, streetwear e colecionáveis da minha coleção pessoal. Chama no Direct para garantir o teu item.</p>
-  </header>
-
-  <main class="grid-produtos">
-
-    <!-- Produto 1: Streetwear -->
-    <div class="card">
-      <img src="https://via.placeholder.com/400" alt="Jaqueta Streetwear">
-      <div class="card-content">
-        <span class="card-category">Apparel / Vestuário</span>
-        <h2 class="card-title">Jaqueta Oversized Heavyweight</h2>
-        <p class="card-price">R$ 150,00</p>
-        <a href="https://ig.me/m/Lag4rtin" target="_blank" class="btn-direct">Comprar no Direct</a>
-      </div>
+  <div class="top-bar">
+    <div class="search-box">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="searchInput" placeholder="Pesquise por marca, modelo..." onkeyup="filtrarProdutos()">
     </div>
+  </div>
 
-    <!-- Produto 2: Carta Pokémon -->
-    <div class="card">
-      <img src="https://via.placeholder.com/400" alt="Carta Pokémon TCG">
-      <div class="card-content">
-        <span class="card-category">TCG / Colecionáveis</span>
-        <h2 class="card-title">Charizard VMax Ultra Rara</h2>
-        <p class="card-price">R$ 220,00</p>
-        <a href="https://ig.me/m/Lag4rtin" target="_blank" class="btn-direct">Comprar no Direct</a>
-      </div>
-    </div>
-
-    <!-- Produto 3: Hot Wheels -->
-    <div class="card">
-      <img src="https://via.placeholder.com/400" alt="Miniatura Hot Wheels">
-      <div class="card-content">
-        <span class="card-category">Diecast / Miniaturas</span>
-        <h2 class="card-title">Hot Wheels Nissan Skyline GT-R</h2>
-        <p class="card-price">R$ 45,00</p>
-        <a href="https://ig.me/m/Lag4rtin" target="_blank" class="btn-direct">Comprar no Direct</a>
-      </div>
-    </div>
-
+  <main class="grid-produtos" id="catalogo">
+    <div class="loading">Carregando catálogo...</div>
   </main>
+
+  <script>
+    let produtosGlobais = [];
+
+    async function carregarProdutos() {
+      try {
+        const resposta = await fetch('./produtos.json');
+        const dados = await resposta.json();
+        produtosGlobais = dados.itens || [];
+        renderizarProdutos(produtosGlobais);
+      } catch (erro) {
+        console.error("Erro ao carregar os produtos:", erro);
+        document.getElementById('catalogo').innerHTML = '<div class="loading">Erro ao carregar o catálogo.</div>';
+      }
+    }
+
+    function renderizarProdutos(lista) {
+      const container = document.getElementById('catalogo');
+      container.innerHTML = '';
+
+      if (lista.length === 0) {
+        container.innerHTML = '<div class="loading">Nenhum produto encontrado.</div>';
+        return;
+      }
+
+      lista.forEach(item => {
+        const linkDirect = item.link || "https://www.instagram.com/lag4rt1n_?stkn=MXhxYmlsN2VybjR5bA==";
+        const htmlCard = `
+          <a href="${linkDirect}" target="_blank" class="card">
+            <div class="card-header">
+              <h2 class="card-title">${item.title}</h2>
+              <div class="card-price"><span>R$</span>${item.price}</div>
+            </div>
+            <div class="card-img-wrapper">
+              <img src="${item.image}" alt="${item.title}">
+            </div>
+            <div class="btn-buy">Comprar no Direct</div>
+          </a>
+        `;
+        container.innerHTML += htmlCard;
+      });
+    }
+
+    function filtrarProdutos() {
+      const termo = document.getElementById('searchInput').value.toLowerCase();
+      const filtrados = produtosGlobais.filter(p => 
+        p.title.toLowerCase().includes(termo) || 
+        (p.category && p.category.toLowerCase().includes(termo))
+      );
+      renderizarProdutos(filtrados);
+    }
+
+    carregarProdutos();
+  </script>
 
 </body>
 </html>
