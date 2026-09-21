@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Drop & Selects | Catálogo</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background-color: #0b0b0c;
+      color: #ffffff;
+      padding: 20px 15px;
+    }
+
+    /* Cabeçalho Minimalista */
+    header {
+      text-align: center;
+      padding: 25px 10px 35px 10px;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    header h1 {
+      font-size: 1.8rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    header p {
+      font-size: 0.9rem;
+      color: #a1a1aa;
+      line-height: 1.4;
+    }
+
+    /* Grade Estilo Marketplace */
+    .grid-produtos {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    /* Card do Produto inspirada na Droper */
+    .card {
+      background: #141416;
+      border: 1px solid #27272a;
+      border-radius: 12px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: border-color 0.2s ease, transform 0.2s ease;
+    }
+
+    .card:hover {
+      border-color: #52525b;
+      transform: translateY(-2px);
+    }
+
+    .card img {
+      width: 100%;
+      height: 280px;
+      object-fit: cover;
+      background-color: #1c1c1f;
+    }
+
+    .card-content {
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .card-category {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #71717a;
+      font-weight: 600;
+    }
+
+    .card-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #f4f4f5;
+      line-height: 1.3;
+    }
+
+    .card-price {
+      font-size: 1.15rem;
+      color: #22c55e; /* Verde estilo Droper */
+      font-weight: 700;
+    }
+
+    .btn-direct {
+      display: block;
+      text-align: center;
+      background-color: #ffffff;
+      color: #000000;
+      text-decoration: none;
+      padding: 12px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      transition: opacity 0.2s;
+    }
+
+    .btn-direct:hover {
+      opacity: 0.9;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Personal Selects</h1>
+    <p>Desapegos, streetwear e colecionáveis da minha coleção pessoal. Chama no Direct para garantir o teu item.</p>
+  </header>
+
+  <main class="grid-produtos">
+
+    <!-- Produto 1: Streetwear -->
+    <div class="card">
+      <img src="https://via.placeholder.com/400" alt="Jaqueta Streetwear">
+      <div class="card-content">
+        <span class="card-category">Apparel / Vestuário</span>
+        <h2 class="card-title">Jaqueta Oversized Heavyweight</h2>
+        <p class="card-price">R$ 150,00</p>
+        <a href="https://www.instagram.com/lag4rt1n_?stkn=MXhxYmlsN2VybjR5bA==" target="_blank" class="btn-direct">Comprar no Direct</a>
+      </div>
+    </div>
+
+    <!-- Produto 2: Carta Pokémon -->
+    <div class="card">
+      <img src="https://via.placeholder.com/400" alt="Carta Pokémon TCG">
+      <div class="card-content">
+        <span class="card-category">TCG / Colecionáveis</span>
+        <h2 class="card-title">Charizard VMax Ultra Rara</h2>
+        <p class="card-price">R$ 220,00</p>
+        <a href="https://www.instagram.com/lag4rt1n_?stkn=MXhxYmlsN2VybjR5bA==" target="_blank" class="btn-direct">Comprar no Direct</a>
+      </div>
+    </div>
+
+    <!-- Produto 3: Hot Wheels -->
+    <div class="card">
+      <img src="https://via.placeholder.com/400" alt="Miniatura Hot Wheels">
+      <div class="card-content">
+        <span class="card-category">Diecast / Miniaturas</span>
+        <h2 class="card-title">Hot Wheels Nissan Skyline GT-R</h2>
+        <p class="card-price">R$ 45,00</p>
+        <a href="https://www.instagram.com/lag4rt1n_?stkn=MXhxYmlsN2VybjR5bA==" target="_blank" class="btn-direct">Comprar no Direct</a>
+      </div>
+    </div>
+
+  </main>
+
+</body>
+</html>
