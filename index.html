@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#111827" />
+  <meta name="description" content="LagartinShop — roupas, Pokémon TCG, Hot Wheels e perfumes." />
+  <title>LagartinShop</title>
+  <style>
+    :root{--bg:#f5f6f8;--card:#fff;--text:#17191d;--muted:#747984;--line:#e7e8ec;--accent:#111827;--accent2:#22c55e;--danger:#ef4444;--radius:18px}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--text)}button,input{font:inherit}button{cursor:pointer;border:0}.app{max-width:760px;margin:auto;min-height:100vh;padding-bottom:90px}
+    header{padding:18px 16px 8px;background:var(--bg);position:sticky;top:0;z-index:20}.top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}.brand{display:flex;align-items:center;gap:9px}.brand-mark{width:40px;height:40px;border-radius:13px;background:#111827;color:white;display:grid;place-items:center;font-size:22px}.brand h1{font-size:20px;margin:0;font-weight:850;letter-spacing:-.5px}.brand small{display:block;color:var(--muted);font-size:11px;margin-top:1px}.cart-btn{position:relative;width:44px;height:44px;border-radius:14px;background:white;box-shadow:0 2px 10px #0000000d;font-size:20px}.cart-count{position:absolute;right:-3px;top:-4px;background:#ef4444;color:#fff;min-width:19px;height:19px;border-radius:20px;font-size:11px;display:grid;place-items:center;font-weight:800;padding:0 4px}
+    .search{display:flex;align-items:center;gap:9px;background:white;border:1px solid var(--line);border-radius:16px;padding:0 14px;height:52px;box-shadow:0 3px 12px #00000008}.search span{font-size:19px}.search input{border:0;outline:0;width:100%;background:transparent;color:var(--text);font-size:15px}.search input::placeholder{color:#9b9ea5}
+    main{padding:8px 16px}.hero{margin:10px 0 18px;background:linear-gradient(135deg,#111827,#30384a);border-radius:24px;color:#fff;padding:22px;overflow:hidden;position:relative}.hero:after{content:'🦎';position:absolute;right:-8px;bottom:-22px;font-size:115px;opacity:.12;transform:rotate(-12deg)}.hero p{margin:0 0 6px;color:#cbd5e1;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px}.hero h2{margin:0;max-width:440px;font-size:28px;line-height:1.05;letter-spacing:-1px}.hero .hero-note{margin-top:10px;color:#d7dbe2;font-size:13px;max-width:430px}
+    .section-head{display:flex;justify-content:space-between;align-items:center;margin:20px 0 11px}.section-head h2{font-size:18px;margin:0;letter-spacing:-.3px}.section-head button{background:none;color:var(--muted);font-size:12px}.cats{display:flex;gap:10px;overflow-x:auto;padding:2px 1px 5px;scrollbar-width:none}.cats::-webkit-scrollbar{display:none}.cat{flex:0 0 auto;background:#fff;border:1px solid var(--line);border-radius:15px;padding:10px 13px;font-size:13px;font-weight:750;display:flex;align-items:center;gap:7px;color:#30343b}.cat.active{background:#111827;color:#fff;border-color:#111827}.cat .ico{font-size:17px}
+    .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.product{background:var(--card);border:1px solid var(--line);border-radius:18px;overflow:hidden;position:relative;box-shadow:0 3px 12px #00000006}.photo{aspect-ratio:1/1;overflow:hidden;background:#eef0f3;display:grid;place-items:center;font-size:58px;position:relative}.photo .condition{position:absolute;left:8px;top:8px;background:#fffffff0;border-radius:8px;padding:5px 7px;font-size:9px;font-weight:800;color:#454951;text-transform:uppercase}.info{padding:11px}.category-label{font-size:10px;color:#8b9099;font-weight:800;text-transform:uppercase;letter-spacing:.5px}.name{font-size:14px;font-weight:780;margin:4px 0 7px;line-height:1.2;min-height:34px}.price{font-size:17px;font-weight:900}.buy{width:100%;margin-top:9px;background:#111827;color:#fff;border-radius:11px;height:37px;font-weight:750;font-size:12px}.buy:active{transform:scale(.98)}.empty{grid-column:1/-1;text-align:center;padding:42px 20px;color:var(--muted)}
+    .bottom{position:fixed;left:50%;bottom:0;transform:translateX(-50%);width:min(760px,100%);background:#ffffffee;backdrop-filter:blur(14px);border-top:1px solid var(--line);display:flex;justify-content:space-around;padding:10px 8px calc(10px + env(safe-area-inset-bottom));z-index:30}.nav{background:none;color:#8a8e96;font-size:10px;font-weight:750;display:flex;flex-direction:column;align-items:center;gap:3px;min-width:65px}.nav.active{color:#111827}.nav b{font-size:20px;font-weight:500}
+    .overlay{position:fixed;inset:0;background:#0008;z-index:100;display:none;align-items:flex-end}.overlay.open{display:flex}.sheet{width:min(760px,100%);margin:auto auto 0;background:white;border-radius:24px 24px 0 0;max-height:92vh;overflow:auto;padding:16px 16px calc(24px + env(safe-area-inset-bottom));box-shadow:0 -12px 40px #0003}.cart-list{padding-top:8px}.cart-item{display:grid;grid-template-columns:72px 1fr auto;gap:11px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)}.cart-thumb{width:72px;height:72px;border-radius:12px;overflow:hidden;background:#f0f1f3;display:grid;place-items:center;font-size:32px}.cart-thumb img{width:100%;height:100%;object-fit:cover}.cart-name{font-size:14px;font-weight:800;line-height:1.25}.cart-unit{font-size:12px;color:var(--muted);margin-top:4px}.qty{display:flex;align-items:center;gap:8px;margin-top:8px}.qty button{width:28px;height:28px;border-radius:9px;background:#f1f2f4;font-weight:900}.qty strong{min-width:18px;text-align:center;font-size:13px}.cart-remove{width:34px;height:34px;border-radius:10px;background:#fff0f0;color:#c62828;font-weight:900}.cart-summary{display:flex;justify-content:space-between;align-items:center;margin:18px 0 10px;padding-top:4px}.cart-summary span{color:var(--muted);font-size:13px}.cart-summary strong{font-size:21px}.cart-empty{padding:48px 18px;text-align:center;color:var(--muted)}.handle{width:42px;height:4px;background:#ddd;border-radius:20px;margin:0 auto 14px}.sheet-top{display:flex;justify-content:space-between;gap:10px}.close{width:36px;height:36px;border-radius:12px;background:#f1f2f4}.detail-gallery{margin-bottom:15px}.detail-photo{height:250px;border-radius:18px;background:#f0f1f3;display:grid;place-items:center;font-size:90px;overflow:hidden;position:relative}.detail-photo img{width:100%;height:100%;object-fit:contain;background:#f0f1f3}.gallery-arrow{position:absolute;top:50%;transform:translateY(-50%);width:38px;height:38px;border-radius:50%;background:#ffffffdd;box-shadow:0 2px 10px #0002;font-size:20px;z-index:2}.gallery-arrow.prev{left:10px}.gallery-arrow.next{right:10px}.gallery-count{position:absolute;right:10px;bottom:10px;background:#111827cc;color:#fff;border-radius:999px;padding:5px 9px;font-size:11px;font-weight:800;z-index:2}.thumbs{display:flex;gap:8px;overflow-x:auto;padding:8px 2px 2px;scrollbar-width:none}.thumbs::-webkit-scrollbar{display:none}.thumb{width:58px;height:58px;flex:0 0 58px;border-radius:10px;overflow:hidden;border:2px solid transparent;background:#f0f1f3;padding:0}.thumb.active{border-color:#111827}.thumb img{width:100%;height:100%;object-fit:cover}.detail-photo.swipeable{touch-action:pan-y}.photo-count{position:absolute;left:10px;bottom:10px;background:#111827cc;color:#fff;border-radius:999px;padding:5px 9px;font-size:11px;font-weight:800}.detail h2{margin:0 0 5px;font-size:22px}.detail .meta{color:var(--muted);font-size:12px}.detail .desc{font-size:14px;line-height:1.55;color:#51555e;margin:14px 0}.detail .detail-price{font-size:26px;font-weight:900}.full-btn{width:100%;height:50px;border-radius:15px;background:#111827;color:#fff;font-weight:800;margin-top:14px}.ig-btn{width:100%;height:50px;border-radius:15px;background:linear-gradient(135deg,#833ab4,#fd1d1d,#fcb045);color:#fff;font-weight:850;margin-top:10px}.ig-secondary{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;background:#fff;color:#111827;border:1px solid var(--line);border-radius:13px;padding:10px 14px;font-weight:800;font-size:12px;margin-top:12px}
+    .toast{position:fixed;left:50%;bottom:86px;transform:translate(-50%,20px);background:#111827;color:#fff;padding:11px 15px;border-radius:13px;font-size:13px;opacity:0;pointer-events:none;transition:.25s;z-index:80}.toast.show{opacity:1;transform:translate(-50%,0)}
+    @media(min-width:600px){.grid{grid-template-columns:repeat(3,minmax(0,1fr))}.hero h2{font-size:34px}}
+  </style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="top">
+      <div class="brand"><div class="brand-mark">🦎</div><div><h1>LagartinShop</h1><small>achados, coleções & estilo</small></div></div>
+      <button class="cart-btn" onclick="openCart()" aria-label="Carrinho">🛒<span class="cart-count" id="cartCount">0</span></button>
+    </div>
+    <label class="search"><span>🔎</span><input id="search" type="search" placeholder="Pesquise por produto, marca..." autocomplete="off"></label>
+  </header>
+
+  <main>
+    <section class="hero"><p>Bem-vindo</p><h2>Coisas legais encontradas em um só lugar.</h2><div class="hero-note">Roupas, Pokémon TCG, Hot Wheels, perfumes e outros achados do Lagartin.</div><a class="ig-secondary" href="https://www.instagram.com/lag4rt1n_/" target="_blank" rel="noopener">📸 @lag4rt1n_ no Instagram</a></section>
+
+    <div class="section-head"><h2>Categorias</h2><button onclick="selectCategory('Todos')">Ver tudo</button></div>
+    <div class="cats" id="cats"></div>
+
+    <div class="section-head"><h2 id="productTitle">Destaques</h2><button onclick="clearFilters()">Limpar filtros</button></div>
+    <section class="grid" id="products"></section>
+  </main>
+
+  <nav class="bottom">
+    <button class="nav active" onclick="goHome()"><b>⌂</b>Início</button>
+    <button class="nav" onclick="focusSearch()"><b>⌕</b>Buscar</button>
+    <button class="nav" onclick="selectCategory('Ofertas')"><b>★</b>Ofertas</button>
+    <button class="nav" onclick="openCart()"><b>🛒</b>Carrinho</button>
+  </nav>
+</div>
+
+<div class="overlay" id="detailOverlay" onclick="closeOnBackdrop(event,'detailOverlay')"><div class="sheet"><div class="handle"></div><div class="sheet-top"><strong>Detalhes</strong><button class="close" onclick="closeDetail()">✕</button></div><div id="detailContent"></div></div></div>
+<div class="overlay" id="cartOverlay" onclick="closeOnBackdrop(event,'cartOverlay')"><div class="sheet"><div class="handle"></div><div class="sheet-top"><strong>Seu carrinho</strong><button class="close" onclick="closeCart()">✕</button></div><div id="cartContent"></div></div></div>
+<div class="toast" id="toast"></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="store-online.js"></script>
+</body>
+</html>
