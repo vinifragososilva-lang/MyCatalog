@@ -1,10 +1,14 @@
 let products = [], photos = [], editing = null;
-let db = null, storage = null;
+let db = null;
 
 const money = v => Number(v || 0).toLocaleString('pt-BR', {
   style: 'currency',
   currency: 'BRL'
 });
+
+/* =========================
+   FIREBASE - SOMENTE FIRESTORE
+   ========================= */
 
 try {
   if (
@@ -16,11 +20,14 @@ try {
     }
 
     db = firebase.firestore();
-    storage = firebase.storage();
   }
 } catch (e) {
-  console.error('Erro ao inicializar Firebase:', e);
+  console.error('Erro ao iniciar Firebase:', e);
 }
+
+/* =========================
+   LOGIN
+   ========================= */
 
 function login() {
   const e = document.getElementById('loginEmail').value.trim();
@@ -35,9 +42,9 @@ function login() {
   firebase.auth()
     .signInWithEmailAndPassword(e, p)
     .catch(err => {
+      console.error(err);
       document.getElementById('loginMsg').textContent =
         'E-mail ou senha incorretos.';
-      console.error(err);
     });
 }
 
@@ -58,6 +65,10 @@ function showLogin() {
   document.getElementById('app').classList.add('hidden');
 }
 
+/* =========================
+   CONFIGURAÇÕES
+   ========================= */
+
 function loadSettings() {
   const s = JSON.parse(
     localStorage.getItem('lagartin_settings_v2') || '{}'
@@ -65,6 +76,10 @@ function loadSettings() {
 
   document.getElementById('whatsapp').value = s.whatsapp || '';
 }
+
+/* =========================
+   PRODUTOS
+   ========================= */
 
 function loadProducts() {
   db.collection('products')
@@ -90,63 +105,153 @@ function loadProducts() {
 }
 
 /* =========================
-   PREPARAÇÃO DAS FOTOS
+   COMPRESSÃO DAS FOTOS
+   SEM FIREBASE STORAGE
    ========================= */
 
 function readAndCompress(file) {
   return new Promise((resolve, reject) => {
-    const r = new FileReader();
+    const reader = new FileReader();
 
-    r.onerror = () => reject(r.error);
+    reader.onerror = () => reject(reader.error);
 
-    r.onload = () => {
+    reader.onload = () => {
       const img = new Image();
 
-      img.onerror = () => resolve(r.result);
+      img.onerror = () => reject(
+        new Error('Não foi possível abrir a imagem.')
+      );
 
-      img.onload = () => {
-        const max = 1600;
+      img.onload = async () => {
+        try {
+          /*
+            Mantemos as imagens pequenas para caber
+            no limite de 1 MiB do Firestore.
+          */
 
-        const scale = Math.min(
-          1,
-          max / Math.max(img.width, img.height)
-        );
+          const maxSize = 900;
 
-        const w = Math.max(
-          1,
-          Math.round(img.width * scale)
-        );
+          let scale = Math.min(
+            1,
+            maxSize / Math.max(img.width, img.height)
+          );
 
-        const h = Math.max(
-          1,
-          Math.round(img.height * scale)
-        );
+          let width = Math.max(
+            1,
+            Math.round(img.width * scale)
+          );
 
-        const c = document.createElement('canvas');
+          let height = Math.max(
+            1,
+            Math.round(img.height * scale)
+          );
 
-        c.width = w;
-        c.height = h;
+          const canvas = document.createElement('canvas');
 
-        const ctx = c.getContext('2d');
+          canvas.width = width;
+          canvas.height = height;
 
-        if (!ctx) {
-          resolve(r.result);
-          return;
+          const ctx = canvas.getContext('2d');
+
+          ctx.drawImage(
+            img,
+            0,
+            0,
+            width,
+            height
+          );
+
+          /*
+            Começamos com qualidade 0.70.
+            Se ficar grande demais, diminuímos.
+          */
+
+          let quality = 0.70;
+          let dataUrl = canvas.toDataURL(
+            'image/jpeg',
+            quality
+          );
+
+          let blob = await (
+            await fetch(dataUrl)
+          ).blob();
+
+          /*
+            Objetivo: cada foto ter no máximo
+            aproximadamente 120 KB.
+          */
+
+          while (blob.size > 120 * 1024 && quality > 0.35) {
+            quality -= 0.05;
+
+            dataUrl = canvas.toDataURL(
+              'image/jpeg',
+              quality
+            );
+
+            blob = await (
+              await fetch(dataUrl)
+            ).blob();
+          }
+
+          /*
+            Se ainda estiver grande, reduzimos
+            fisicamente a resolução.
+          */
+
+          while (
+            blob.size > 120 * 1024 &&
+            width > 500 &&
+            height > 500
+          ) {
+            width = Math.round(width * 0.85);
+            height = Math.round(height * 0.85);
+
+            canvas.width = width;
+            canvas.height = height;
+
+            ctx.clearRect(
+              0,
+              0,
+              width,
+              height
+            );
+
+            ctx.drawImage(
+              img,
+              0,
+              0,
+              width,
+              height
+            );
+
+            dataUrl = canvas.toDataURL(
+              'image/jpeg',
+              0.55
+            );
+
+            blob = await (
+              await fetch(dataUrl)
+            ).blob();
+          }
+
+          resolve(dataUrl);
+
+        } catch (err) {
+          reject(err);
         }
-
-        ctx.drawImage(img, 0, 0, w, h);
-
-        resolve(
-          c.toDataURL('image/jpeg', 0.82)
-        );
       };
 
-      img.src = r.result;
+      img.src = reader.result;
     };
 
-    r.readAsDataURL(file);
+    reader.readAsDataURL(file);
   });
 }
+
+/* =========================
+   SELEÇÃO DE FOTOS
+   ========================= */
 
 async function previewPhotos(e) {
   const files = [...e.target.files]
@@ -154,30 +259,50 @@ async function previewPhotos(e) {
 
   if (!files.length) return;
 
+  /*
+    Até 4 fotos por produto.
+  */
+
+  const selected = files.slice(0, 4);
+
   const st = document.getElementById('photoStatus');
 
   st.style.display = 'block';
 
   st.textContent =
-    `Preparando ${files.length} foto${files.length > 1 ? 's' : ''}...`;
+    `Preparando ${selected.length} foto${
+      selected.length > 1 ? 's' : ''
+    }...`;
 
   try {
     photos = await Promise.all(
-      files.map(readAndCompress)
+      selected.map(readAndCompress)
     );
 
     renderPhotos();
 
     st.textContent =
-      `${photos.length} foto${photos.length > 1 ? 's' : ''} pronta${photos.length > 1 ? 's' : ''}.`;
+      `${photos.length} foto${
+        photos.length > 1 ? 's' : ''
+      } pronta${
+        photos.length > 1 ? 's' : ''
+      }.`;
 
   } catch (err) {
-    console.error('Erro ao preparar fotos:', err);
+    console.error(err);
+
+    photos = [];
+
+    renderPhotos();
 
     st.textContent =
       'Erro ao preparar as fotos.';
   }
 }
+
+/* =========================
+   VISUALIZAÇÃO DAS FOTOS
+   ========================= */
 
 function renderPhotos() {
   document.getElementById('photoPreview').innerHTML =
@@ -198,104 +323,10 @@ function renderPhotos() {
 }
 
 /* =========================
-   UPLOAD PARA FIREBASE
-   ========================= */
-
-async function uploadDataUrl(dataUrl, productId, index) {
-
-  if (!dataUrl.startsWith('data:')) {
-    return dataUrl;
-  }
-
-  const response = await fetch(dataUrl);
-  const blob = await response.blob();
-
-  const ref = storage.ref(
-    `products/${productId}/${Date.now()}_${index}.jpg`
-  );
-
-  const task = ref.put(blob, {
-    contentType: 'image/jpeg'
-  });
-
-  await new Promise((resolve, reject) => {
-
-    let finished = false;
-
-    const timer = setTimeout(() => {
-
-      if (finished) return;
-
-      finished = true;
-
-      try {
-        task.cancel();
-      } catch (e) {
-        console.error(e);
-      }
-
-      reject(
-        new Error(
-          'Tempo esgotado ao enviar a foto para o Firebase Storage.'
-        )
-      );
-
-    }, 45000);
-
-    task.on(
-      firebase.storage.TaskEvent.STATE_CHANGED,
-
-      snapshot => {
-        if (snapshot.totalBytes) {
-          const percent = Math.round(
-            (snapshot.bytesTransferred /
-              snapshot.totalBytes) * 100
-          );
-
-          const status =
-            document.getElementById('photoStatus');
-
-          if (status) {
-            status.style.display = 'block';
-            status.textContent =
-              `Enviando foto ${index + 1}: ${percent}%`;
-          }
-        }
-      },
-
-      error => {
-
-        if (finished) return;
-
-        finished = true;
-
-        clearTimeout(timer);
-
-        reject(error);
-      },
-
-      () => {
-
-        if (finished) return;
-
-        finished = true;
-
-        clearTimeout(timer);
-
-        resolve();
-      }
-    );
-  });
-
-  return await ref.getDownloadURL();
-}
-
-/* =========================
    SALVAR PRODUTO
    ========================= */
 
 async function saveProduct() {
-
   const name =
     document.getElementById('name').value.trim();
 
@@ -314,53 +345,43 @@ async function saveProduct() {
       'Preencha nome e preço.',
       'error'
     );
-
     return;
   }
 
-  if (!db || !storage) {
+  if (!db) {
     msg(
       'Firebase não configurado.',
       'error'
     );
-
     return;
   }
 
   const btn =
     document.getElementById('saveBtn');
 
-  const wasEditing = !!editing;
-
   btn.disabled = true;
   btn.textContent = 'Salvando...';
 
   try {
+    /*
+      Cria ou recupera o documento.
+    */
 
     const ref = editing
       ? db.collection('products').doc(editing)
       : db.collection('products').doc();
 
-    /* Envia todas as fotos */
-
-    const urls = await Promise.all(
-      photos.map((x, i) =>
-        uploadDataUrl(
-          x,
-          ref.id,
-          i
-        )
-      )
-    );
-
-    const category =
-      document.getElementById('category').value;
+    /*
+      IMPORTANTE:
+      As fotos já estão comprimidas em Data URL.
+      Elas serão salvas diretamente no Firestore.
+    */
 
     const data = {
-
       name: name,
 
-      category: category,
+      category:
+        document.getElementById('category').value,
 
       price: price,
 
@@ -375,7 +396,7 @@ async function saveProduct() {
       description:
         document.getElementById('description').value.trim(),
 
-      images: urls,
+      images: photos,
 
       emoji: {
         'Roupas': '👕',
@@ -383,19 +404,28 @@ async function saveProduct() {
         'Hot Wheels': '🚗',
         'Perfumes': '🌹',
         'Ofertas': '🔥'
-      }[category] || '📦'
+      }[
+        document.getElementById('category').value
+      ] || '📦'
     };
 
-    if (editing) {
+    /*
+      Novo produto
+    */
 
-      await ref.update(data);
-
-    } else {
-
+    if (!editing) {
       data.createdAt =
         firebase.firestore.FieldValue.serverTimestamp();
 
       await ref.set(data);
+
+    } else {
+
+      /*
+        Produto existente
+      */
+
+      await ref.update(data);
     }
 
     cancelEdit();
@@ -412,53 +442,28 @@ async function saveProduct() {
       e
     );
 
-    let errorMessage =
+    let texto =
       'Não foi possível salvar o produto.';
 
     if (
       e &&
-      e.code === 'storage/unauthorized'
+      e.code === 'permission-denied'
     ) {
+      texto =
+        'Permissão negada pelo Firestore.';
+    }
 
-      errorMessage =
-        'Firebase Storage recusou o envio. Verifique as regras do Storage.';
-
-    } else if (
-      e &&
-      e.code === 'storage/canceled'
-    ) {
-
-      errorMessage =
-        'O envio da foto foi cancelado.';
-
-    } else if (
-      e &&
-      e.code === 'storage/unknown'
-    ) {
-
-      errorMessage =
-        'O Firebase Storage apresentou um erro.';
-
-    } else if (
+    if (
       e &&
       e.message &&
-      e.message.includes('Tempo esgotado')
+      e.message.includes('maximum allowed size')
     ) {
-
-      errorMessage =
-        'O envio da foto demorou mais de 45 segundos.';
-
-    } else if (
-      e &&
-      e.message
-    ) {
-
-      errorMessage =
-        'Erro: ' + e.message;
+      texto =
+        'As fotos ficaram grandes demais. Escolha fotos menores.';
     }
 
     msg(
-      errorMessage,
+      texto,
       'error'
     );
 
@@ -467,7 +472,7 @@ async function saveProduct() {
     btn.disabled = false;
 
     btn.textContent =
-      wasEditing
+      editing
         ? 'Salvar alterações'
         : 'Publicar produto';
   }
@@ -478,7 +483,6 @@ async function saveProduct() {
    ========================= */
 
 function editProduct(id) {
-
   const p =
     products.find(x => x.id === id);
 
@@ -487,13 +491,13 @@ function editProduct(id) {
   editing = id;
 
   document.getElementById('name').value =
-    p.name;
+    p.name || '';
 
   document.getElementById('category').value =
-    p.category;
+    p.category || 'Roupas';
 
   document.getElementById('price').value =
-    p.price;
+    p.price || '';
 
   document.getElementById('stock').value =
     p.stock || 0;
@@ -507,9 +511,7 @@ function editProduct(id) {
   document.getElementById('description').value =
     p.description || '';
 
-  photos = [
-    ...(p.images || [])
-  ];
+  photos = [...(p.images || [])];
 
   renderPhotos();
 
@@ -533,7 +535,6 @@ function editProduct(id) {
    ========================= */
 
 function cancelEdit() {
-
   editing = null;
 
   [
@@ -563,8 +564,8 @@ function cancelEdit() {
   document.getElementById('photoInput').value =
     '';
 
-  document.getElementById('photoStatus').style.display =
-    'none';
+  document.getElementById('photoStatus')
+    .style.display = 'none';
 }
 
 /* =========================
@@ -572,20 +573,17 @@ function cancelEdit() {
    ========================= */
 
 async function removeProduct(id) {
-
   if (!confirm('Excluir este produto?')) {
     return;
   }
 
   try {
-
     await db
       .collection('products')
       .doc(id)
       .delete();
 
   } catch (e) {
-
     console.error(e);
 
     alert(
@@ -599,10 +597,10 @@ async function removeProduct(id) {
    ========================= */
 
 function renderList() {
-
   const q =
     (
-      document.getElementById('adminSearch')?.value || ''
+      document.getElementById('adminSearch')
+        ?.value || ''
     ).toLowerCase();
 
   const list =
@@ -614,59 +612,59 @@ function renderList() {
         ' ' +
         (p.brand || '')
       )
-        .toLowerCase()
-        .includes(q)
+      .toLowerCase()
+      .includes(q)
     );
 
   document.getElementById('productList').innerHTML =
     list.length
       ? list.map(p => `
-          <div class="item">
+        <div class="item">
 
-            <div class="thumb">
-              ${
-                p.images?.[0]
-                  ? `<img src="${p.images[0]}">`
-                  : p.emoji || '📦'
-              }
-            </div>
+          <div class="thumb">
+            ${
+              p.images?.[0]
+                ? `<img src="${p.images[0]}">`
+                : p.emoji || '📦'
+            }
+          </div>
 
-            <div class="itemmain">
+          <div class="itemmain">
 
-              <strong>
-                ${esc(p.name)}
-              </strong>
+            <strong>
+              ${esc(p.name)}
+            </strong>
 
-              <div class="meta">
-                ${esc(p.category)}
-                ·
-                ${money(p.price)}
-                ·
-                estoque ${p.stock}
-              </div>
-
-            </div>
-
-            <div class="actions">
-
-              <button
-                class="btn secondary"
-                onclick="editProduct('${p.id}')"
-              >
-                Editar
-              </button>
-
-              <button
-                class="btn danger"
-                onclick="removeProduct('${p.id}')"
-              >
-                Excluir
-              </button>
-
+            <div class="meta">
+              ${esc(p.category)}
+              ·
+              ${money(p.price)}
+              ·
+              estoque ${p.stock}
             </div>
 
           </div>
-        `).join('')
+
+          <div class="actions">
+
+            <button
+              class="btn secondary"
+              onclick="editProduct('${p.id}')"
+            >
+              Editar
+            </button>
+
+            <button
+              class="btn danger"
+              onclick="removeProduct('${p.id}')"
+            >
+              Excluir
+            </button>
+
+          </div>
+
+        </div>
+      `).join('')
 
       : '<div class="notice">Nenhum produto cadastrado.</div>';
 }
@@ -676,10 +674,10 @@ function renderList() {
    ========================= */
 
 function updateStats() {
-
   document.getElementById(
     'statProducts'
-  ).textContent = products.length;
+  ).textContent =
+    products.length;
 
   document.getElementById(
     'statStock'
@@ -705,17 +703,15 @@ function updateStats() {
 }
 
 /* =========================
-   CONFIGURAÇÕES
+   CONFIGURAÇÕES WHATSAPP
    ========================= */
 
 function saveSettings() {
-
   localStorage.setItem(
     'lagartin_settings_v2',
     JSON.stringify({
       whatsapp:
-        document
-          .getElementById('whatsapp')
+        document.getElementById('whatsapp')
           .value
           .replace(/\D/g, '')
     })
@@ -736,7 +732,6 @@ function saveSettings() {
    ========================= */
 
 function msg(t, c) {
-
   const x =
     document.getElementById('formMsg');
 
@@ -749,15 +744,14 @@ function msg(t, c) {
 
   setTimeout(() => {
     x.textContent = '';
-  }, 6000);
+  }, 3500);
 }
 
 /* =========================
-   SEGURANÇA DO TEXTO
+   ESCAPE HTML
    ========================= */
 
 function esc(s) {
-
   return String(s ?? '')
     .replace(
       /[&<>'"]/g,
@@ -796,9 +790,11 @@ if (db) {
 
         showLogin();
       }
+
     });
 
 } else {
 
   showLogin();
-          }
+
+            }
